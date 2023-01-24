@@ -1,0 +1,17 @@
+run-name: test
+on:
+  push:
+    branches-ignore:
+      - main
+  workflow_call:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run tests
+        run: pnpm test
