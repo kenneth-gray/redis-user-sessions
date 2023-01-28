@@ -1,0 +1,15 @@
+run-name: changeset-check
+on:
+  pull_request:
+    types: [opened, ready_for_review, reopened, synchronize]
+jobs:
+  changeset-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Check for changeset
+        run: pnpm changeset status --since=main
