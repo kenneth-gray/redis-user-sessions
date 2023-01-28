@@ -1,10 +1,17 @@
 name: Setup
 description: Setup environment
+inputs:
+  fetch-depth:
+    description: Fetch depth for checkout action
+    required: false
+    default: 1
 runs:
   using: 'composite'
   steps:
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        fetch-depth: ${{ inputs.fetch-depth }}
 
     - name: Install Node.js
       uses: actions/setup-node@v3
