@@ -20,7 +20,7 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
 
-      - name: Create Release Pull Request or Publish to npm
+      - name: Create release PR or Publish to npm
         id: changesets
         uses: changesets/action@v1
         with:
