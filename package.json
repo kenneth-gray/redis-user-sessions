@@ -1,7 +1,7 @@
 {
   "name": "redis-user-sessions",
   "version": "0.1.0",
-  "description": "",
+  "description": "Helper functions for managing redis user sessions",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "build": "rimraf dist && tsup-node --config tsup.config.ts",
+    "release": "pnpm build && changeset publish",
     "test": "vitest --run",
     "test:watch": "vitest",
     "lint": "eslint src --ext ts"
