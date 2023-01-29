@@ -5,8 +5,10 @@ run-name: changeset-check
 on:
   pull_request:
     types: [opened, ready_for_review, reopened, synchronize]
+
 jobs:
   changeset-check:
+    if: github.head_ref != 'changeset-release/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
