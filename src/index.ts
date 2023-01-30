@@ -132,7 +132,7 @@ async function updateSession(
   });
 }
 
-async function deleteSessionData(client: RedisClient, sessionId: string) {
+async function deleteSession(client: RedisClient, sessionId: string) {
   const data = await readSession(client, sessionId);
 
   // No session
@@ -218,7 +218,7 @@ export {
   createSession,
   readSession,
   updateSession,
-  deleteSessionData,
+  deleteSession,
   getSessions,
   updateSessions,
 };

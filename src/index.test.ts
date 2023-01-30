@@ -7,7 +7,7 @@ import {
   createSession,
   readSession,
   updateSession,
-  deleteSessionData,
+  deleteSession,
   getSessions,
   updateSessions,
 } from './index';
@@ -268,11 +268,11 @@ describe('redis-user-sessions', () => {
     );
   });
 
-  describe('deleteSessionData', () => {
+  describe('deleteSession', () => {
     it(
       'does nothing when session does not exist',
       redisTest(async (client) => {
-        await deleteSessionData(client, 'does-not-exist');
+        await deleteSession(client, 'does-not-exist');
       }),
     );
 
@@ -294,7 +294,7 @@ describe('redis-user-sessions', () => {
         expect(sessionData).not.toBeNull();
         expect(zsetData.length).toEqual(1);
 
-        await deleteSessionData(client, sessionId);
+        await deleteSession(client, sessionId);
 
         sessionData = await getSessionData(client, sessionId);
         zsetData = await getZsetData(client, userId);
@@ -333,7 +333,7 @@ describe('redis-user-sessions', () => {
         expireTime = await client.pExpireTime(userSessionsKey);
         expect(expireTime).toEqual(inTwentyMinutesDate.getTime());
 
-        await deleteSessionData(client, sessionIdB);
+        await deleteSession(client, sessionIdB);
 
         // Need to delay for non awaited function to update the TTL before checking
         await delay();
@@ -373,7 +373,7 @@ describe('redis-user-sessions', () => {
         expireTime = await client.pExpireTime(userSessionsKey);
         expect(expireTime).toEqual(inTwentyMinutesDate.getTime());
 
-        await deleteSessionData(client, sessionIdA);
+        await deleteSession(client, sessionIdA);
 
         // Need to delay for non awaited function to update the TTL before checking
         await delay();

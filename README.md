@@ -83,11 +83,11 @@ Updates existing sessions keyed on the session id provided. If the session does 
 | data           | `object`      | _required_ | Object can contain any serialisable properties.                                                             |
 | `return value` | `undefined`   | N/A        | N/A                                                                                                         |
 
-### deleteSessionData
+### deleteSession
 
 Deletes an existin session keyed on the session id provided. If the session does not exist nothing happens.
 
-`async function deleteSessionData(client, sessionId)`
+`async function deleteSession(client, sessionId)`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
