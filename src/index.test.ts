@@ -429,6 +429,37 @@ describe('redis-user-sessions', () => {
         ]);
       }),
     );
+
+    it(
+      'does not include sessions that have expired and removes them from the user sessions list',
+      redisTest(async (client) => {
+        const sessionIdA = 'aacbbbf4-0b4e-568e-8cfe-713357310a7e';
+        const sessionIdB = 'bbc6d41c-10fd-5481-878a-c46e5abe363c';
+        const userId = 'Andre';
+        const expiresOneSecondAgo = new Date(Date.now() - 1000).toISOString();
+        const sessionDataA = {
+          userId,
+          expires: getInXMinutesDate(10).toISOString(),
+        };
+        const sessionDataB = { userId, expires: expiresOneSecondAgo };
+
+        await createSessionData(client, sessionIdA, sessionDataA);
+
+        await delay();
+
+        await createSessionData(client, sessionIdB, sessionDataB);
+
+        await delay();
+
+        const sessions = await getSessions(client, userId);
+        expect(sessions).toEqual([
+          { sessionId: sessionIdA, data: sessionDataA },
+        ]);
+
+        const zsetData = await getZsetData(client, userId);
+        expect(zsetData).toEqual([sessionIdA]);
+      }),
+    );
   });
 
   describe('updateSessions', () => {
@@ -467,12 +498,53 @@ describe('redis-user-sessions', () => {
         ]);
       }),
     );
+
+    it(
+      'does not error or attempt to update sessions that have expired',
+      redisTest(async (client) => {
+        const sessionIdA = '450bcee7-5b5d-5926-8e97-e2bce4a518b1';
+        const sessionIdB = '5325624a-4881-588a-9c0c-679c7fdf9c32';
+        const sessionIdC = '63e46800-f58d-5afc-8a4a-4e52d24e0b51';
+        const userId = 'Clara';
+        const expires = getInXMinutesDate(10).toISOString();
+        const expiresOneSecondAgo = new Date(Date.now() - 1000).toISOString();
+        const sessionData = { userId, expires };
+
+        await createSessionData(client, sessionIdA, sessionData);
+
+        await delay();
+
+        await createSessionData(client, sessionIdB, sessionData);
+
+        await delay();
+
+        await createSessionData(client, sessionIdC, {
+          userId,
+          expires: expiresOneSecondAgo,
+        });
+
+        await delay();
+
+        await updateSessions(client, userId, { new: 'property' });
+
+        await delay();
+
+        const sessions = await getSessions(client, userId);
+        expect(sessions).toEqual([
+          { sessionId: sessionIdA, data: { ...sessionData, new: 'property' } },
+          { sessionId: sessionIdB, data: { ...sessionData, new: 'property' } },
+        ]);
+
+        const empytSessionData = await getSessionData(client, sessionIdC);
+        expect(empytSessionData).toEqual(null);
+      }),
+    );
   });
 });
 
-function delay(): Promise<void> {
+function delay(timeout = 10): Promise<void> {
   return new Promise((resolve) => {
-    setTimeout(resolve, 10);
+    setTimeout(resolve, timeout);
   });
 }
 
