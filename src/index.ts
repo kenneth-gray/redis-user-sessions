@@ -146,6 +146,12 @@ async function getSessions(client: RedisClient, userId: string) {
 
   const sessions = (await Promise.all(sessionPromises)).filter(isValidSession);
 
+  // If any session was out of date, expired sessions exist
+  if (sessionPromises.length !== sessions.length) {
+    // No await on purpose - background task
+    removeExpiredSessions(client, userId);
+  }
+
   return sessions;
 }
 

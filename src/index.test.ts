@@ -429,6 +429,37 @@ describe('redis-user-sessions', () => {
         ]);
       }),
     );
+
+    it(
+      'does not include sessions that have expired and removes them from the user sessions list',
+      redisTest(async (client) => {
+        const sessionIdA = 'aacbbbf4-0b4e-568e-8cfe-713357310a7e';
+        const sessionIdB = 'bbc6d41c-10fd-5481-878a-c46e5abe363c';
+        const userId = 'Andre';
+        const expiresOneSecondAgo = new Date(Date.now() - 1000).toISOString();
+        const sessionDataA = {
+          userId,
+          expires: getInXMinutesDate(10).toISOString(),
+        };
+        const sessionDataB = { userId, expires: expiresOneSecondAgo };
+
+        await createSessionData(client, sessionIdA, sessionDataA);
+
+        await delay();
+
+        await createSessionData(client, sessionIdB, sessionDataB);
+
+        await delay();
+
+        const sessions = await getSessions(client, userId);
+        expect(sessions).toEqual([
+          { sessionId: sessionIdA, data: sessionDataA },
+        ]);
+
+        const zsetData = await getZsetData(client, userId);
+        expect(zsetData).toEqual([sessionIdA]);
+      }),
+    );
   });
 
   describe('updateSessions', () => {
