@@ -17,6 +17,10 @@
   },
   "author": "Kenneth Gray",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kenneth-gray/redis-user-sessions"
+  },
   "peerDependencies": {
     "redis": "^4.5.1"
   },
