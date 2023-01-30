@@ -9,7 +9,7 @@ import {
   updateSession,
   deleteSession,
   getUserSessions,
-  updateSessions,
+  updateUserSessions,
 } from './index';
 
 type RedisClient = ReturnType<typeof createClient>;
@@ -462,7 +462,7 @@ describe('redis-user-sessions', () => {
     );
   });
 
-  describe('updateSessions', () => {
+  describe('updateUserSessions', () => {
     it(
       'updates all user sessions with the same data',
       redisTest(async (client) => {
@@ -487,7 +487,7 @@ describe('redis-user-sessions', () => {
 
         await delay();
 
-        await updateSessions(client, userId, { a: 4 });
+        await updateUserSessions(client, userId, { a: 4 });
 
         const sessions = await getUserSessions(client, userId);
 
@@ -525,7 +525,7 @@ describe('redis-user-sessions', () => {
 
         await delay();
 
-        await updateSessions(client, userId, { new: 'property' });
+        await updateUserSessions(client, userId, { new: 'property' });
 
         await delay();
 

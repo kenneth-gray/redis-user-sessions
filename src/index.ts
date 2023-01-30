@@ -179,7 +179,7 @@ async function getUserSessions(client: RedisClient, userId: string) {
   return sessions;
 }
 
-async function updateSessions(
+async function updateUserSessions(
   client: RedisClient,
   userId: string,
   data: Record<string, unknown>,
@@ -220,5 +220,5 @@ export {
   updateSession,
   deleteSession,
   getUserSessions,
-  updateSessions,
+  updateUserSessions,
 };

@@ -111,11 +111,11 @@ Get all sessions for a particular user id.
 | userId         | `string`                     | _required_ | Unique identifier for the user.                                                                                                                                                                                  |
 | `return value` | `Array<{ sessionId, data }>` | N/A        | `sessionId` is a string. `data` is an object which will contain the following properties: `userId` (string), `expires` (ISO 8601 timestamp). The data object can also contain any other serialisable properties. |
 
-### updateSessions
+### updateUserSessions
 
 Update all sessions tied to a specific user id.
 
-`async function updateSessions(client, userId, data)`
+`async function updateUserSessions(client, userId, data)`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
