@@ -502,10 +502,10 @@ describe('redis-user-sessions', () => {
     it(
       'does not error or attempt to update sessions that have expired',
       redisTest(async (client) => {
-        const sessionIdA = 'a2da5e71-8b28-5da2-bd96-fe51ff9c527b';
-        const sessionIdB = 'b30fe598-3f75-52e9-9019-da63b1083622';
-        const sessionIdC = 'c76cff77-50bd-57b8-a803-e8aa721a2d79';
-        const userId = 'Elizabeth';
+        const sessionIdA = '450bcee7-5b5d-5926-8e97-e2bce4a518b1';
+        const sessionIdB = '5325624a-4881-588a-9c0c-679c7fdf9c32';
+        const sessionIdC = '63e46800-f58d-5afc-8a4a-4e52d24e0b51';
+        const userId = 'Clara';
         const expires = getInXMinutesDate(10).toISOString();
         const expiresOneSecondAgo = new Date(Date.now() - 1000).toISOString();
         const sessionData = { userId, expires };
