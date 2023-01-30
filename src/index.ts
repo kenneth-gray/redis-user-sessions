@@ -132,10 +132,12 @@ async function getSessions(client: RedisClient, userId: string) {
 
   const result: Array<{ sessionId: string; data: MinimumSessionData }> = [];
   for (const sessionId of sessionIds) {
+    // TODO: Could make this better by using Promise.all rather than awaiting each result one at a time
     const sessionData = await readSessionData(client, sessionId);
 
     // This would happen if the session had expired
     if (sessionData == null) {
+      // TODO: If this happens run `updateUserSessionsTtl` at the end of the for loop (without awaiting the result)
       continue;
     }
 
@@ -152,6 +154,7 @@ async function updateSessions(
 ) {
   // getSessions checks that the actual sessions still exist
   // - it's possible for the zset to get out of date
+  // - updateSessionData errors when the session does not exist, so this check is required currently
   const sessionIds = (await getSessions(client, userId)).map(
     ({ sessionId }) => sessionId,
   );
