@@ -17,7 +17,7 @@ npm install redis-user-sessions
 
 ```ts
 import { createClient } = from 'redis';
-import { createSessionData } = from 'redis-user-sessions';
+import { createSession } = from 'redis-user-sessions';
 
 (async () => {
   // Create and connect redis client
@@ -29,7 +29,7 @@ import { createSessionData } = from 'redis-user-sessions';
 
   // Create session data
   const anyOtherData = { role: 'admin' };
-  await createSessionData(client, 'session-id', {
+  await createSession(client, 'session-id', {
     expires: new Date().toISOString(),
     userId: 'user-id-for-eva',
     ...anyOtherData,
@@ -39,11 +39,11 @@ import { createSessionData } = from 'redis-user-sessions';
 
 ## API
 
-### createSessionData
+### createSession
 
 Creates session data keyed on the session id provided.
 
-`async function createSessionData(client, sessionId, data)`
+`async function createSession(client, sessionId, data)`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
@@ -58,7 +58,7 @@ Creates session data keyed on the session id provided.
 
 Read session data keyed on the session id provided.
 
-`async function createSessionData(client, sessionId)`
+`async function readSessionData(client, sessionId)`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 

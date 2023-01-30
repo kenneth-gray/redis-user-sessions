@@ -13,7 +13,7 @@ const minimumSessionDataSchema = z
 type MinimumSessionData = z.infer<typeof minimumSessionDataSchema>;
 type RedisClient = ReturnType<typeof createClient>;
 
-async function createSessionData(
+async function createSession(
   client: RedisClient,
   sessionId: string,
   data: MinimumSessionData,
@@ -113,7 +113,7 @@ async function updateSessionDataInternal({
     }
   }
 
-  await createSessionData(client, sessionId, {
+  await createSession(client, sessionId, {
     ...currentSessionData,
     ...data,
   });
@@ -215,7 +215,7 @@ async function getSessionIds(client: RedisClient, userId: string) {
 }
 
 export {
-  createSessionData,
+  createSession,
   readSessionData,
   updateSessionData,
   deleteSessionData,

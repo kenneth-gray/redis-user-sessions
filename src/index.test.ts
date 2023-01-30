@@ -4,7 +4,7 @@ import { createClient } from 'redis';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
-  createSessionData,
+  createSession,
   readSessionData,
   updateSessionData,
   deleteSessionData,
@@ -23,11 +23,11 @@ describe('redis-user-sessions', () => {
     execSync('docker-compose down');
   });
 
-  describe('createSessionData', () => {
+  describe('createSession', () => {
     it.fails(
       'errors when expires is not a datetime',
       redisTest((client) =>
-        createSessionData(client, '', {
+        createSession(client, '', {
           expires: '',
           userId: 'Elijah',
         }),
@@ -40,12 +40,12 @@ describe('redis-user-sessions', () => {
         const sessionId = 'e8a11617-8781-5103-80ee-1437532c985d';
         const expires = getInXMinutesDate(10).toISOString();
 
-        await createSessionData(client, sessionId, {
+        await createSession(client, sessionId, {
           expires,
           userId: 'Danny',
         });
 
-        await createSessionData(client, sessionId, {
+        await createSession(client, sessionId, {
           expires,
           userId: 'Ronnie',
         });
@@ -64,7 +64,7 @@ describe('redis-user-sessions', () => {
           userId,
         };
 
-        await createSessionData(client, sessionId, data);
+        await createSession(client, sessionId, data);
 
         const sessionData = await getSessionData(client, sessionId);
         expect(sessionData).toEqual(data);
@@ -83,7 +83,7 @@ describe('redis-user-sessions', () => {
         const userId = 'Vera';
         const userSessionsKey = getUserSessionsKey(userId);
 
-        await createSessionData(client, sessionId, {
+        await createSession(client, sessionId, {
           expires: inTenMinutesDate.toISOString(),
           userId,
         });
@@ -110,11 +110,11 @@ describe('redis-user-sessions', () => {
         const userId = 'Glen';
         const userSessionsKey = getUserSessionsKey(userId);
 
-        await createSessionData(client, sessionIdA, {
+        await createSession(client, sessionIdA, {
           expires: inTenMinutesDate.toISOString(),
           userId,
         });
-        await createSessionData(client, sessionIdB, {
+        await createSession(client, sessionIdB, {
           expires: inTwentyMinutesDate.toISOString(),
           userId,
         });
@@ -141,11 +141,11 @@ describe('redis-user-sessions', () => {
         const userId = 'Laura';
         const userSessionsKey = getUserSessionsKey(userId);
 
-        await createSessionData(client, sessionIdA, {
+        await createSession(client, sessionIdA, {
           expires: inTenMinutesDate.toISOString(),
           userId,
         });
-        await createSessionData(client, sessionIdB, {
+        await createSession(client, sessionIdB, {
           expires: inFiveMinutesDate.toISOString(),
           userId,
         });
@@ -173,7 +173,7 @@ describe('redis-user-sessions', () => {
     );
 
     it(
-      'returns data created by createSessionData',
+      'returns data created by createSession',
       redisTest(async (client) => {
         const sessionId = '18da8a5b-4784-5ac6-bda8-ea25eb98007a';
         const data = {
@@ -183,7 +183,7 @@ describe('redis-user-sessions', () => {
           b: 2,
         };
 
-        await createSessionData(client, sessionId, data);
+        await createSession(client, sessionId, data);
 
         const result = await readSessionData(client, sessionId);
 
@@ -198,13 +198,13 @@ describe('redis-user-sessions', () => {
         const sessionIdB = '2a1bd38d-ecb3-5cb5-9ad7-2d03d6d55ec8';
         const userId = 'Cynthia';
 
-        await createSessionData(client, sessionIdA, {
+        await createSession(client, sessionIdA, {
           expires: getInXMinutesDate(10).toISOString(),
           userId,
         });
 
         // Need to delay for non awaited function to update the TTL before checking
-        await createSessionData(client, sessionIdB, {
+        await createSession(client, sessionIdB, {
           expires: new Date('2020-01-01').toISOString(),
           userId,
         });
@@ -244,7 +244,7 @@ describe('redis-user-sessions', () => {
           b: 2,
         };
 
-        await createSessionData(client, sessionId, data);
+        await createSession(client, sessionId, data);
         await updateSessionData(client, sessionId, { a: 3, b: 4 });
 
         const sessionData = await getSessionData(client, sessionId);
@@ -262,7 +262,7 @@ describe('redis-user-sessions', () => {
           userId,
         };
 
-        await createSessionData(client, sessionId, data);
+        await createSession(client, sessionId, data);
         await updateSessionData(client, sessionId, { userId: 'Dora' });
       }),
     );
@@ -284,7 +284,7 @@ describe('redis-user-sessions', () => {
         const sessionId = '40b556de-7f16-589f-af0d-c3bc185ad825';
         const userId = 'Alma';
 
-        await createSessionData(client, sessionId, {
+        await createSession(client, sessionId, {
           expires: getInXMinutesDate(10).toISOString(),
           userId,
         });
@@ -314,7 +314,7 @@ describe('redis-user-sessions', () => {
         const userId = 'Lucile';
         const userSessionsKey = getUserSessionsKey(userId);
 
-        await createSessionData(client, sessionIdA, {
+        await createSession(client, sessionIdA, {
           expires: inTenMinutesDate.toISOString(),
           userId,
         });
@@ -322,7 +322,7 @@ describe('redis-user-sessions', () => {
         // Need to delay for non awaited function to update the TTL
         await delay();
 
-        await createSessionData(client, sessionIdB, {
+        await createSession(client, sessionIdB, {
           expires: inTwentyMinutesDate.toISOString(),
           userId,
         });
@@ -354,7 +354,7 @@ describe('redis-user-sessions', () => {
         const userId = 'Jane';
         const userSessionsKey = getUserSessionsKey(userId);
 
-        await createSessionData(client, sessionIdA, {
+        await createSession(client, sessionIdA, {
           expires: inTenMinutesDate.toISOString(),
           userId,
         });
@@ -362,7 +362,7 @@ describe('redis-user-sessions', () => {
         // Need to delay for non awaited function to update the TTL before checking
         await delay();
 
-        await createSessionData(client, sessionIdB, {
+        await createSession(client, sessionIdB, {
           expires: inTwentyMinutesDate.toISOString(),
           userId,
         });
@@ -391,7 +391,7 @@ describe('redis-user-sessions', () => {
       const userId = 'Mina';
       const dateOneSecondAgo = new Date(Date.now() - 1000);
 
-      await createSessionData(client, sessionId, {
+      await createSession(client, sessionId, {
         expires: dateOneSecondAgo.toISOString(),
         userId,
       });
@@ -413,11 +413,11 @@ describe('redis-user-sessions', () => {
         const sessionDataA = { userId, expires, a: 1, b: 2 };
         const sessionDataB = { userId, expires, c: 3, d: 4 };
 
-        await createSessionData(client, sessionIdA, sessionDataA);
+        await createSession(client, sessionIdA, sessionDataA);
 
         await delay();
 
-        await createSessionData(client, sessionIdB, sessionDataB);
+        await createSession(client, sessionIdB, sessionDataB);
 
         await delay();
 
@@ -443,11 +443,11 @@ describe('redis-user-sessions', () => {
         };
         const sessionDataB = { userId, expires: expiresOneSecondAgo };
 
-        await createSessionData(client, sessionIdA, sessionDataA);
+        await createSession(client, sessionIdA, sessionDataA);
 
         await delay();
 
-        await createSessionData(client, sessionIdB, sessionDataB);
+        await createSession(client, sessionIdB, sessionDataB);
 
         await delay();
 
@@ -475,15 +475,15 @@ describe('redis-user-sessions', () => {
         const sessionDataB = { userId, expires, a: 2 };
         const sessionDataC = { userId, expires, a: 3 };
 
-        await createSessionData(client, sessionIdA, sessionDataA);
+        await createSession(client, sessionIdA, sessionDataA);
 
         await delay();
 
-        await createSessionData(client, sessionIdB, sessionDataB);
+        await createSession(client, sessionIdB, sessionDataB);
 
         await delay();
 
-        await createSessionData(client, sessionIdC, sessionDataC);
+        await createSession(client, sessionIdC, sessionDataC);
 
         await delay();
 
@@ -510,15 +510,15 @@ describe('redis-user-sessions', () => {
         const expiresOneSecondAgo = new Date(Date.now() - 1000).toISOString();
         const sessionData = { userId, expires };
 
-        await createSessionData(client, sessionIdA, sessionData);
+        await createSession(client, sessionIdA, sessionData);
 
         await delay();
 
-        await createSessionData(client, sessionIdB, sessionData);
+        await createSession(client, sessionIdB, sessionData);
 
         await delay();
 
-        await createSessionData(client, sessionIdC, {
+        await createSession(client, sessionIdC, {
           userId,
           expires: expiresOneSecondAgo,
         });
