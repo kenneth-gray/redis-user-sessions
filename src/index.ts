@@ -127,24 +127,26 @@ async function deleteSessionData(client: RedisClient, sessionId: string) {
   updateUserSessionsTtl(client, userSessionsKey);
 }
 
+function isValidSession(maybeSession: {
+  sessionId: string;
+  data: null | MinimumSessionData;
+}): maybeSession is { sessionId: string; data: MinimumSessionData } {
+  return Boolean(maybeSession.data);
+}
+
 async function getSessions(client: RedisClient, userId: string) {
   const sessionIds = await client.zRange(getUserSessionsKey(userId), 0, -1);
 
-  const result: Array<{ sessionId: string; data: MinimumSessionData }> = [];
-  for (const sessionId of sessionIds) {
-    // TODO: Could make this better by using Promise.all rather than awaiting each result one at a time
-    const sessionData = await readSessionData(client, sessionId);
+  const sessionPromises = sessionIds.map((sessionId) =>
+    readSessionData(client, sessionId).then((sessionData) => ({
+      sessionId,
+      data: sessionData,
+    })),
+  );
 
-    // This would happen if the session had expired
-    if (sessionData == null) {
-      // TODO: If this happens run `updateUserSessionsTtl` at the end of the for loop (without awaiting the result)
-      continue;
-    }
+  const sessions = (await Promise.all(sessionPromises)).filter(isValidSession);
 
-    result.push({ sessionId, data: sessionData });
-  }
-
-  return result;
+  return sessions;
 }
 
 async function updateSessions(
