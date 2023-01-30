@@ -66,7 +66,7 @@ describe('redis-user-sessions', () => {
 
         await createSession(client, sessionId, data);
 
-        const sessionData = await getSessionData(client, sessionId);
+        const sessionData = await getSession(client, sessionId);
         expect(sessionData).toEqual(data);
 
         const expireTime = await client.pExpireTime(sessionKey);
@@ -209,7 +209,7 @@ describe('redis-user-sessions', () => {
           userId,
         });
 
-        const expiredSessionData = await getSessionData(client, sessionIdB);
+        const expiredSessionData = await getSession(client, sessionIdB);
         expect(expiredSessionData).toBeNull();
 
         const zsetData = await getZsetData(client, userId);
@@ -247,7 +247,7 @@ describe('redis-user-sessions', () => {
         await createSession(client, sessionId, data);
         await updateSession(client, sessionId, { a: 3, b: 4 });
 
-        const sessionData = await getSessionData(client, sessionId);
+        const sessionData = await getSession(client, sessionId);
         expect(sessionData).toEqual({ ...data, a: 3, b: 4 });
       }),
     );
@@ -289,14 +289,14 @@ describe('redis-user-sessions', () => {
           userId,
         });
 
-        sessionData = await getSessionData(client, sessionId);
+        sessionData = await getSession(client, sessionId);
         zsetData = await getZsetData(client, userId);
         expect(sessionData).not.toBeNull();
         expect(zsetData.length).toEqual(1);
 
         await deleteSession(client, sessionId);
 
-        sessionData = await getSessionData(client, sessionId);
+        sessionData = await getSession(client, sessionId);
         zsetData = await getZsetData(client, userId);
         expect(sessionData).toBeNull();
         expect(zsetData.length).toEqual(0);
@@ -396,7 +396,7 @@ describe('redis-user-sessions', () => {
         userId,
       });
 
-      const sessionData = await getSessionData(client, sessionId);
+      const sessionData = await getSession(client, sessionId);
 
       expect(sessionData).toBe(null);
     }),
@@ -535,7 +535,7 @@ describe('redis-user-sessions', () => {
           { sessionId: sessionIdB, data: { ...sessionData, new: 'property' } },
         ]);
 
-        const empytSessionData = await getSessionData(client, sessionIdC);
+        const empytSessionData = await getSession(client, sessionIdC);
         expect(empytSessionData).toEqual(null);
       }),
     );
@@ -573,7 +573,7 @@ function redisTest(fn: (client: RedisClient) => void | Promise<void>) {
   };
 }
 
-async function getSessionData(client: RedisClient, sessionId: string) {
+async function getSession(client: RedisClient, sessionId: string) {
   const sessionKey = getSessionKey(sessionId);
   const serialisedData = await client.get(sessionKey);
   const sessionData =
