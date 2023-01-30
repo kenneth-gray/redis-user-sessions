@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   createSession,
   readSession,
-  updateSessionData,
+  updateSession,
   deleteSessionData,
   getSessions,
   updateSessions,
@@ -227,10 +227,10 @@ describe('redis-user-sessions', () => {
     );
   });
 
-  describe('updateSessionData', () => {
+  describe('updateSession', () => {
     it.fails(
       'errors when session does not already exist',
-      redisTest((client) => updateSessionData(client, 'does-not-exist', {})),
+      redisTest((client) => updateSession(client, 'does-not-exist', {})),
     );
 
     it(
@@ -245,7 +245,7 @@ describe('redis-user-sessions', () => {
         };
 
         await createSession(client, sessionId, data);
-        await updateSessionData(client, sessionId, { a: 3, b: 4 });
+        await updateSession(client, sessionId, { a: 3, b: 4 });
 
         const sessionData = await getSessionData(client, sessionId);
         expect(sessionData).toEqual({ ...data, a: 3, b: 4 });
@@ -263,7 +263,7 @@ describe('redis-user-sessions', () => {
         };
 
         await createSession(client, sessionId, data);
-        await updateSessionData(client, sessionId, { userId: 'Dora' });
+        await updateSession(client, sessionId, { userId: 'Dora' });
       }),
     );
   });

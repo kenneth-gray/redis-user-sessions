@@ -68,11 +68,11 @@ Read session data keyed on the session id provided.
 | sessionId      | `string`          | _required_ | Unique identifier for the session.                                                                                                                                                                      |
 | `return value` | `object` / `null` | N/A        | Object that must contain the following properties: `userId` (string), `expires` (ISO 8601 timestamp). It can contain any other serialisable properties. Returns `null` when the session does not exist. |
 
-### updateSessionData
+### updateSession
 
 Updates existing sessions keyed on the session id provided. If the session does not exist the promise will be rejected.
 
-`async function updateSessionData(client, sessionId, data)`
+`async function updateSession(client, sessionId, data)`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 

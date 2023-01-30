@@ -89,7 +89,7 @@ async function readSession<T extends MinimumSessionData>(
   return data;
 }
 
-async function updateSessionDataInternal({
+async function updateSessionInternal({
   client,
   sessionId,
   data,
@@ -119,12 +119,12 @@ async function updateSessionDataInternal({
   });
 }
 
-async function updateSessionData(
+async function updateSession(
   client: RedisClient,
   sessionId: string,
   data: Record<string, unknown>,
 ) {
-  return updateSessionDataInternal({
+  return updateSessionInternal({
     client,
     sessionId,
     data,
@@ -187,7 +187,7 @@ async function updateSessions(
   const sessionIds = await getSessionIds(client, userId);
 
   const promises = sessionIds.map((sessionId) =>
-    updateSessionDataInternal({
+    updateSessionInternal({
       client,
       sessionId,
       data,
@@ -217,7 +217,7 @@ async function getSessionIds(client: RedisClient, userId: string) {
 export {
   createSession,
   readSession,
-  updateSessionData,
+  updateSession,
   deleteSessionData,
   getSessions,
   updateSessions,
