@@ -54,11 +54,11 @@ Creates session data keyed on the session id provided.
 | data           | `object`      | _required_ | Object that must contain the following properties: `userId` (string), `expires` (ISO 8601 timestamp). It can contain any other serialisable properties. |
 | `return value` | `undefined`   | N/A        | N/A                                                                                                                                                     |
 
-### readSessionData
+### readSession
 
 Read session data keyed on the session id provided.
 
-`async function readSessionData(client, sessionId)`
+`async function readSession(client, sessionId)`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 

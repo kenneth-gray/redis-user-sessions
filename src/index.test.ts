@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import {
   createSession,
-  readSessionData,
+  readSession,
   updateSessionData,
   deleteSessionData,
   getSessions,
@@ -162,11 +162,11 @@ describe('redis-user-sessions', () => {
     );
   });
 
-  describe('readSessionData', () => {
+  describe('readSession', () => {
     it(
       'returns null if session id does not exist',
       redisTest(async (client) => {
-        const result = await readSessionData(client, 'does-not-exist');
+        const result = await readSession(client, 'does-not-exist');
 
         expect(result).toBeNull();
       }),
@@ -185,7 +185,7 @@ describe('redis-user-sessions', () => {
 
         await createSession(client, sessionId, data);
 
-        const result = await readSessionData(client, sessionId);
+        const result = await readSession(client, sessionId);
 
         expect(result).toEqual(data);
       }),
@@ -216,7 +216,7 @@ describe('redis-user-sessions', () => {
         // Proves that out of data session B is still in zset
         expect(zsetData).toEqual([sessionIdB, sessionIdA]);
 
-        await readSessionData(client, sessionIdA);
+        await readSession(client, sessionIdA);
 
         // Need to delay for non awaited function to remove the expired session
         await delay();

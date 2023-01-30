@@ -20,7 +20,7 @@ async function createSession(
 ) {
   const sessionData = minimumSessionDataSchema.parse(data);
 
-  const currentSessionData = await readSessionData(client, sessionId);
+  const currentSessionData = await readSession(client, sessionId);
   if (currentSessionData && currentSessionData.userId !== sessionData.userId) {
     throw new Error(
       `Cannot change the userId value in sessions. Session: ${sessionId}`,
@@ -71,7 +71,7 @@ async function updateUserSessionsTtl(
   await client.pExpireAt(userSessionsKey, largestExpiresUnixTimestampSeconds);
 }
 
-async function readSessionData<T extends MinimumSessionData>(
+async function readSession<T extends MinimumSessionData>(
   client: RedisClient,
   sessionId: string,
 ): Promise<null | T> {
@@ -100,7 +100,7 @@ async function updateSessionDataInternal({
   data: Record<string, unknown>;
   shouldErrorWhenSessionDoesNotExist: boolean;
 }) {
-  const currentSessionData = await readSessionData(client, sessionId);
+  const currentSessionData = await readSession(client, sessionId);
 
   if (currentSessionData == null) {
     if (shouldErrorWhenSessionDoesNotExist) {
@@ -133,7 +133,7 @@ async function updateSessionData(
 }
 
 async function deleteSessionData(client: RedisClient, sessionId: string) {
-  const data = await readSessionData(client, sessionId);
+  const data = await readSession(client, sessionId);
 
   // No session
   if (data === null) {
@@ -162,7 +162,7 @@ async function getSessions(client: RedisClient, userId: string) {
   const sessionIds = await getSessionIds(client, userId);
 
   const sessionPromises = sessionIds.map((sessionId) =>
-    readSessionData(client, sessionId).then((sessionData) => ({
+    readSession(client, sessionId).then((sessionData) => ({
       sessionId,
       data: sessionData,
     })),
@@ -216,7 +216,7 @@ async function getSessionIds(client: RedisClient, userId: string) {
 
 export {
   createSession,
-  readSessionData,
+  readSession,
   updateSessionData,
   deleteSessionData,
   getSessions,
