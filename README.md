@@ -2,6 +2,11 @@
 
 Helper functions for managing redis user sessions.
 
+## Benefits
+
+- Adds appropriate TTL for redis keys based on the required `expires` property on a session
+- Tracks sessions across user ids (using appropriate TTLs), making it easy to allow users see what sessions are currently active and manage deletion of their own sessions (when exposed to the user)
+
 ## Installation
 
 ```sh
