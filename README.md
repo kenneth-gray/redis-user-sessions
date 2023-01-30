@@ -97,11 +97,11 @@ Deletes an existin session keyed on the session id provided. If the session does
 | sessionId      | `string`      | _required_ | Unique identifier for the session.                                                                          |
 | `return value` | `undefined`   | N/A        | N/A                                                                                                         |
 
-### getSessions
+### getUserSessions
 
 Get all sessions for a particular user id.
 
-`async function getSessions(client, userId)`
+`async function getUserSessions(client, userId)`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 

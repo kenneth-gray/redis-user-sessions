@@ -8,7 +8,7 @@ import {
   readSession,
   updateSession,
   deleteSession,
-  getSessions,
+  getUserSessions,
   updateSessions,
 } from './index';
 
@@ -402,7 +402,7 @@ describe('redis-user-sessions', () => {
     }),
   );
 
-  describe('getSessions', () => {
+  describe('getUserSessions', () => {
     it(
       'returns sessionIds and their data',
       redisTest(async (client) => {
@@ -421,7 +421,7 @@ describe('redis-user-sessions', () => {
 
         await delay();
 
-        const sessions = await getSessions(client, userId);
+        const sessions = await getUserSessions(client, userId);
 
         expect(sessions).toEqual([
           { sessionId: sessionIdA, data: sessionDataA },
@@ -451,7 +451,7 @@ describe('redis-user-sessions', () => {
 
         await delay();
 
-        const sessions = await getSessions(client, userId);
+        const sessions = await getUserSessions(client, userId);
         expect(sessions).toEqual([
           { sessionId: sessionIdA, data: sessionDataA },
         ]);
@@ -489,7 +489,7 @@ describe('redis-user-sessions', () => {
 
         await updateSessions(client, userId, { a: 4 });
 
-        const sessions = await getSessions(client, userId);
+        const sessions = await getUserSessions(client, userId);
 
         expect(sessions).toEqual([
           { sessionId: sessionIdA, data: { ...sessionDataA, a: 4 } },
@@ -529,7 +529,7 @@ describe('redis-user-sessions', () => {
 
         await delay();
 
-        const sessions = await getSessions(client, userId);
+        const sessions = await getUserSessions(client, userId);
         expect(sessions).toEqual([
           { sessionId: sessionIdA, data: { ...sessionData, new: 'property' } },
           { sessionId: sessionIdB, data: { ...sessionData, new: 'property' } },

@@ -158,7 +158,7 @@ function isValidSession(maybeSession: {
   return Boolean(maybeSession.data);
 }
 
-async function getSessions(client: RedisClient, userId: string) {
+async function getUserSessions(client: RedisClient, userId: string) {
   const sessionIds = await getSessionIds(client, userId);
 
   const sessionPromises = sessionIds.map((sessionId) =>
@@ -219,6 +219,6 @@ export {
   readSession,
   updateSession,
   deleteSession,
-  getSessions,
+  getUserSessions,
   updateSessions,
 };
