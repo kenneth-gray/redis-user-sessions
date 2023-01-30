@@ -1,5 +1,11 @@
 # redis-user-sessions
 
+## 1.0.2
+
+### Patch Changes
+
+- 53bdfad: Initial documentation for redis-user-sessions
+
 ## 1.0.1
 
 ### Patch Changes
