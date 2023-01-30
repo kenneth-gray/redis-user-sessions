@@ -527,6 +527,8 @@ describe('redis-user-sessions', () => {
 
         await updateSessions(client, userId, { new: 'property' });
 
+        await delay();
+
         const sessions = await getSessions(client, userId);
         expect(sessions).toEqual([
           { sessionId: sessionIdA, data: { ...sessionData, new: 'property' } },
