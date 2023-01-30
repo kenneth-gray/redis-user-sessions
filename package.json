@@ -1,6 +1,6 @@
 {
   "name": "redis-user-sessions",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Helper functions for managing redis user sessions",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
