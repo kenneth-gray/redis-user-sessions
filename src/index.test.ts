@@ -34,7 +34,7 @@ describe('redis-user-sessions', () => {
             expires: '',
             userId: 'Elijah',
           },
-        }),
+        }).then(() => undefined),
       ),
     );
 
@@ -76,13 +76,37 @@ describe('redis-user-sessions', () => {
           userId,
         };
 
-        await createSession({ client, sessionId, data });
+        const returnedSessionId = await createSession({
+          client,
+          sessionId,
+          data,
+        });
+
+        expect(returnedSessionId).toEqual(sessionId);
 
         const sessionData = await getSession(client, sessionId);
         expect(sessionData).toEqual(data);
 
         const expireTime = await client.pExpireTime(sessionKey);
         expect(expireTime).toEqual(inTenMinutesDate.getTime());
+      }),
+    );
+
+    it(
+      'automatically creates a session id when not provided',
+      redisTest(async (client) => {
+        const sessionId = await createSession({
+          client,
+          data: {
+            userId: 'Lora',
+            expires: getInXMinutesDate(10).toISOString(),
+          },
+        });
+
+        // Disconnection fail when delay is missing
+        await delay();
+
+        expect(typeof sessionId).toEqual('string');
       }),
     );
 

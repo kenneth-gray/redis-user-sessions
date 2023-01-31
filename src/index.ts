@@ -1,5 +1,6 @@
 import type { createClient } from 'redis';
 
+import uid from 'uid-safe';
 import z from 'zod';
 
 const minimumSessionDataSchema = z
@@ -15,11 +16,11 @@ type RedisClient = ReturnType<typeof createClient>;
 
 async function createSession({
   client,
-  sessionId,
+  sessionId = uid.sync(24),
   data,
 }: {
   client: RedisClient;
-  sessionId: string;
+  sessionId?: string;
   data: MinimumSessionData;
 }) {
   const sessionData = minimumSessionDataSchema.parse(data);
@@ -48,6 +49,8 @@ async function createSession({
 
   // No await on purpose - background task
   updateUserSessionsTtl({ client, userSessionsKey });
+
+  return sessionId;
 }
 
 async function updateUserSessionsTtl({
