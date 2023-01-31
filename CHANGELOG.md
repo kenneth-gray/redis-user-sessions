@@ -1,5 +1,22 @@
 # redis-user-sessions
 
+## 2.0.0
+
+### Major Changes
+
+- b995081: - Function names have changed
+  - `createSessionData` => `createSession`
+  - `readSessionData` => `readSession`
+  - `updateSessionData` => `updateSession`
+  - `deleteSessionData` => `deleteSession`
+  - `getSessions` => `getUserSessions`
+  - `updateSessions` => `updateUserSessions`
+  - Function signatures changed to single object parameter
+
+### Minor Changes
+
+- b995081: Session id can be created automatically using createSession
+
 ## 1.0.3
 
 ### Patch Changes
