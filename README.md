@@ -17,7 +17,7 @@ npm install redis-user-sessions
 
 ```ts
 import { createClient } = from 'redis';
-import { createSessionData } = from 'redis-user-sessions';
+import { createSession } = from 'redis-user-sessions';
 
 (async () => {
   // Create and connect redis client
@@ -29,36 +29,40 @@ import { createSessionData } = from 'redis-user-sessions';
 
   // Create session data
   const anyOtherData = { role: 'admin' };
-  await createSessionData(client, 'session-id', {
-    expires: new Date().toISOString(),
-    userId: 'user-id-for-eva',
-    ...anyOtherData,
+  await createSession({
+    client,
+    sessionId: 'session-id',
+    data: {
+      expires: new Date().toISOString(),
+      userId: 'user-id-for-eva',
+      ...anyOtherData,
+    },
   });
 })();
 ```
 
 ## API
 
-### createSessionData
+### createSession
 
 Creates session data keyed on the session id provided.
 
-`async function createSessionData(client, sessionId, data)`
+`async function createSession({ client, sessionId, data })`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
-| Property       | Type          | Default    | Description                                                                                                                                             |
-| -------------- | ------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| client         | `RedisClient` | _required_ | Redis client created using `createClient` from the `redis` npm package. Must already be connected to Redis.                                             |
-| sessionId      | `string`      | _required_ | Unique identifier for the session.                                                                                                                      |
-| data           | `object`      | _required_ | Object that must contain the following properties: `userId` (string), `expires` (ISO 8601 timestamp). It can contain any other serialisable properties. |
-| `return value` | `undefined`   | N/A        | N/A                                                                                                                                                     |
+| Property       | Type          | Default          | Description                                                                                                                                             |
+| -------------- | ------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| client         | `RedisClient` | _required_       | Redis client created using `createClient` from the `redis` npm package. Must already be connected to Redis.                                             |
+| sessionId      | `string`      | _auto generated_ | Unique identifier for the session.                                                                                                                      |
+| data           | `object`      | _required_       | Object that must contain the following properties: `userId` (string), `expires` (ISO 8601 timestamp). It can contain any other serialisable properties. |
+| `return value` | `undefined`   | N/A              | N/A                                                                                                                                                     |
 
-### readSessionData
+### readSession
 
 Read session data keyed on the session id provided.
 
-`async function createSessionData(client, sessionId)`
+`async function readSession({ client, sessionId })`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
@@ -68,11 +72,11 @@ Read session data keyed on the session id provided.
 | sessionId      | `string`          | _required_ | Unique identifier for the session.                                                                                                                                                                      |
 | `return value` | `object` / `null` | N/A        | Object that must contain the following properties: `userId` (string), `expires` (ISO 8601 timestamp). It can contain any other serialisable properties. Returns `null` when the session does not exist. |
 
-### updateSessionData
+### updateSession
 
 Updates existing sessions keyed on the session id provided. If the session does not exist the promise will be rejected.
 
-`async function updateSessionData(client, sessionId, data)`
+`async function updateSession({ client, sessionId, data })`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
@@ -83,11 +87,11 @@ Updates existing sessions keyed on the session id provided. If the session does 
 | data           | `object`      | _required_ | Object can contain any serialisable properties.                                                             |
 | `return value` | `undefined`   | N/A        | N/A                                                                                                         |
 
-### deleteSessionData
+### deleteSession
 
 Deletes an existin session keyed on the session id provided. If the session does not exist nothing happens.
 
-`async function deleteSessionData(client, sessionId)`
+`async function deleteSession({ client, sessionId })`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
@@ -97,11 +101,11 @@ Deletes an existin session keyed on the session id provided. If the session does
 | sessionId      | `string`      | _required_ | Unique identifier for the session.                                                                          |
 | `return value` | `undefined`   | N/A        | N/A                                                                                                         |
 
-### getSessions
+### getUserSessions
 
 Get all sessions for a particular user id.
 
-`async function getSessions(client, userId)`
+`async function getUserSessions({ client, userId })`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
@@ -111,11 +115,11 @@ Get all sessions for a particular user id.
 | userId         | `string`                     | _required_ | Unique identifier for the user.                                                                                                                                                                                  |
 | `return value` | `Array<{ sessionId, data }>` | N/A        | `sessionId` is a string. `data` is an object which will contain the following properties: `userId` (string), `expires` (ISO 8601 timestamp). The data object can also contain any other serialisable properties. |
 
-### updateSessions
+### updateUserSessions
 
 Update all sessions tied to a specific user id.
 
-`async function updateSessions(client, userId, data)`
+`async function updateUserSessions({ client, userId, data })`
 
 <!-- https://www.tablesgenerator.com/markdown_tables -->
 
