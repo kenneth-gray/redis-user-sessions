@@ -13,14 +13,18 @@ const minimumSessionDataSchema = z
 type MinimumSessionData = z.infer<typeof minimumSessionDataSchema>;
 type RedisClient = ReturnType<typeof createClient>;
 
-async function createSession(
-  client: RedisClient,
-  sessionId: string,
-  data: MinimumSessionData,
-) {
+async function createSession({
+  client,
+  sessionId,
+  data,
+}: {
+  client: RedisClient;
+  sessionId: string;
+  data: MinimumSessionData;
+}) {
   const sessionData = minimumSessionDataSchema.parse(data);
 
-  const currentSessionData = await readSession(client, sessionId);
+  const currentSessionData = await readSession({ client, sessionId });
   if (currentSessionData && currentSessionData.userId !== sessionData.userId) {
     throw new Error(
       `Cannot change the userId value in sessions. Session: ${sessionId}`,
@@ -43,13 +47,16 @@ async function createSession(
   ]);
 
   // No await on purpose - background task
-  updateUserSessionsTtl(client, userSessionsKey);
+  updateUserSessionsTtl({ client, userSessionsKey });
 }
 
-async function updateUserSessionsTtl(
-  client: RedisClient,
-  userSessionsKey: string,
-) {
+async function updateUserSessionsTtl({
+  client,
+  userSessionsKey,
+}: {
+  client: RedisClient;
+  userSessionsKey: string;
+}) {
   // Values are session ids, scores are expiry times
   const largestExpiresValueAndScoreArray = await client.zRangeWithScores(
     userSessionsKey,
@@ -71,10 +78,13 @@ async function updateUserSessionsTtl(
   await client.pExpireAt(userSessionsKey, largestExpiresUnixTimestampSeconds);
 }
 
-async function readSession<T extends MinimumSessionData>(
-  client: RedisClient,
-  sessionId: string,
-): Promise<null | T> {
+async function readSession<T extends MinimumSessionData>({
+  client,
+  sessionId,
+}: {
+  client: RedisClient;
+  sessionId: string;
+}): Promise<null | T> {
   const serialisedData = await client.get(getSessionKey(sessionId));
 
   if (serialisedData == null) {
@@ -84,7 +94,7 @@ async function readSession<T extends MinimumSessionData>(
   const data: T = JSON.parse(serialisedData);
 
   // No await on purpose - background task
-  removeExpiredSessions(client, data.userId);
+  removeExpiredSessions({ client, userId: data.userId });
 
   return data;
 }
@@ -99,8 +109,8 @@ async function updateSessionInternal({
   sessionId: string;
   data: Record<string, unknown>;
   shouldErrorWhenSessionDoesNotExist: boolean;
-}) {
-  const currentSessionData = await readSession(client, sessionId);
+}): Promise<void> {
+  const currentSessionData = await readSession({ client, sessionId });
 
   if (currentSessionData == null) {
     if (shouldErrorWhenSessionDoesNotExist) {
@@ -113,17 +123,25 @@ async function updateSessionInternal({
     }
   }
 
-  await createSession(client, sessionId, {
-    ...currentSessionData,
-    ...data,
+  await createSession({
+    client,
+    sessionId,
+    data: {
+      ...currentSessionData,
+      ...data,
+    },
   });
 }
 
-async function updateSession(
-  client: RedisClient,
-  sessionId: string,
-  data: Record<string, unknown>,
-) {
+async function updateSession({
+  client,
+  sessionId,
+  data,
+}: {
+  client: RedisClient;
+  sessionId: string;
+  data: Record<string, unknown>;
+}) {
   return updateSessionInternal({
     client,
     sessionId,
@@ -132,8 +150,14 @@ async function updateSession(
   });
 }
 
-async function deleteSession(client: RedisClient, sessionId: string) {
-  const data = await readSession(client, sessionId);
+async function deleteSession({
+  client,
+  sessionId,
+}: {
+  client: RedisClient;
+  sessionId: string;
+}) {
+  const data = await readSession({ client, sessionId });
 
   // No session
   if (data === null) {
@@ -148,7 +172,7 @@ async function deleteSession(client: RedisClient, sessionId: string) {
   ]);
 
   // No await on purpose - background task
-  updateUserSessionsTtl(client, userSessionsKey);
+  updateUserSessionsTtl({ client, userSessionsKey });
 }
 
 function isValidSession(maybeSession: {
@@ -158,11 +182,17 @@ function isValidSession(maybeSession: {
   return Boolean(maybeSession.data);
 }
 
-async function getUserSessions(client: RedisClient, userId: string) {
-  const sessionIds = await getSessionIds(client, userId);
+async function getUserSessions({
+  client,
+  userId,
+}: {
+  client: RedisClient;
+  userId: string;
+}) {
+  const sessionIds = await getSessionIds({ client, userId });
 
   const sessionPromises = sessionIds.map((sessionId) =>
-    readSession(client, sessionId).then((sessionData) => ({
+    readSession({ client, sessionId }).then((sessionData) => ({
       sessionId,
       data: sessionData,
     })),
@@ -173,18 +203,22 @@ async function getUserSessions(client: RedisClient, userId: string) {
   // If any session was out of date, expired sessions exist
   if (sessionPromises.length !== sessions.length) {
     // No await on purpose - background task
-    removeExpiredSessions(client, userId);
+    removeExpiredSessions({ client, userId });
   }
 
   return sessions;
 }
 
-async function updateUserSessions(
-  client: RedisClient,
-  userId: string,
-  data: Record<string, unknown>,
-) {
-  const sessionIds = await getSessionIds(client, userId);
+async function updateUserSessions({
+  client,
+  userId,
+  data,
+}: {
+  client: RedisClient;
+  userId: string;
+  data: Record<string, unknown>;
+}) {
+  const sessionIds = await getSessionIds({ client, userId });
 
   const promises = sessionIds.map((sessionId) =>
     updateSessionInternal({
@@ -206,11 +240,23 @@ function getUserSessionsKey(userId: string) {
   return `user:${userId}:sessions`;
 }
 
-async function removeExpiredSessions(client: RedisClient, userId: string) {
+async function removeExpiredSessions({
+  client,
+  userId,
+}: {
+  client: RedisClient;
+  userId: string;
+}) {
   await client.zRemRangeByScore(getUserSessionsKey(userId), '-inf', Date.now());
 }
 
-async function getSessionIds(client: RedisClient, userId: string) {
+async function getSessionIds({
+  client,
+  userId,
+}: {
+  client: RedisClient;
+  userId: string;
+}) {
   return client.zRange(getUserSessionsKey(userId), 0, -1);
 }
 
