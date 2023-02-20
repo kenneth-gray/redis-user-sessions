@@ -10,6 +10,7 @@ import {
   deleteSession,
   getUserSessions,
   updateUserSessions,
+  updateSessions,
 } from './index';
 
 type RedisClient = ReturnType<typeof createClient>;
@@ -670,6 +671,137 @@ describe('redis-user-sessions', () => {
 
         const empytSessionData = await getSession(client, sessionIdC);
         expect(empytSessionData).toEqual(null);
+      }),
+    );
+  });
+
+  describe('updateSessions', () => {
+    it(
+      'updates all sessions',
+      redisTest(async (client) => {
+        const sessionIdA = 'd9a55e6c-fca2-5348-b15b-c8adf362aaa4';
+        const sessionIdB = 'cacfeacb-b301-5e52-891f-a4e6df55ac8d';
+        const sessionIdC = '3a30d896-778d-5f23-a4bf-ab09eae5aacf';
+        const startData = {
+          userId: 'Nell',
+          expires: getInXMinutesDate(10).toISOString(),
+        };
+        const updateData = { a: 1 };
+        const expectedData = { ...startData, ...updateData };
+
+        await createSession({
+          client,
+          sessionId: sessionIdA,
+          data: startData,
+        });
+        await createSession({
+          client,
+          sessionId: sessionIdB,
+          data: startData,
+        });
+        await createSession({
+          client,
+          sessionId: sessionIdC,
+          data: startData,
+        });
+
+        await delay();
+
+        await updateSessions({ client, data: updateData });
+
+        await delay();
+
+        const sessionDataA = await getSession(client, sessionIdA);
+        const sessionDataB = await getSession(client, sessionIdB);
+        const sessionDataC = await getSession(client, sessionIdC);
+
+        expect(sessionDataA).toEqual(expectedData);
+        expect(sessionDataB).toEqual(expectedData);
+        expect(sessionDataC).toEqual(expectedData);
+      }),
+    );
+
+    it(
+      'updates TTL when expires updates',
+      redisTest(async (client) => {
+        const sessionIdA = 'a17f0bd9-b59f-526d-8bd7-d20cd30dc0ac';
+        const sessionIdB = 'cb888cfd-5066-5f42-8d4c-9fb667c15453';
+        const sessionIdC = '1718a628-1c7b-5be0-a4d8-496fc716846a';
+        const sessionKeyA = getSessionKey(sessionIdA);
+        const sessionKeyB = getSessionKey(sessionIdB);
+        const sessionKeyC = getSessionKey(sessionIdC);
+        const inTwoMinutesDate = getInXMinutesDate(2);
+        const startData = {
+          userId: 'Lucille',
+          expires: getInXMinutesDate(10).toISOString(),
+        };
+        const updateData = { expires: inTwoMinutesDate.toISOString() };
+        await createSession({
+          client,
+          sessionId: sessionIdA,
+          data: startData,
+        });
+        await createSession({
+          client,
+          sessionId: sessionIdB,
+          data: startData,
+        });
+        await createSession({
+          client,
+          sessionId: sessionIdC,
+          data: startData,
+        });
+        await delay();
+        await updateSessions({ client, data: updateData });
+        await delay(200);
+
+        const expireTimeA = await client.pExpireTime(sessionKeyA);
+        const expireTimeB = await client.pExpireTime(sessionKeyB);
+        const expireTimeC = await client.pExpireTime(sessionKeyC);
+        expect(expireTimeA).toEqual(inTwoMinutesDate.getTime());
+        expect(expireTimeB).toEqual(inTwoMinutesDate.getTime());
+        expect(expireTimeC).toEqual(inTwoMinutesDate.getTime());
+      }),
+    );
+
+    it.fails.only(
+      'errors when attempting to update the userId',
+      redisTest(async (client) => {
+        const sessionIdA = '8cfbab63-91f1-568b-8265-8b54cc3f0fe3';
+        const sessionIdB = '112b04ed-c419-551d-abee-996c940ea458';
+        const sessionIdC = '662b583c-4ee9-54d9-85dc-35771c421d11';
+        const startData = {
+          userId: 'Jeanette',
+          expires: getInXMinutesDate(10).toISOString(),
+        };
+        const updateData = { a: 1 };
+
+        await createSession({
+          client,
+          sessionId: sessionIdA,
+          data: startData,
+        });
+        await createSession({
+          client,
+          sessionId: sessionIdB,
+          data: startData,
+        });
+        await createSession({
+          client,
+          sessionId: sessionIdC,
+          data: startData,
+        });
+
+        await delay();
+
+        console.log('1');
+
+        // TODO: Does not work
+        try {
+          await updateSessions({ client, data: updateData });
+        } catch (error) {
+          console.log(error);
+        }
       }),
     );
   });

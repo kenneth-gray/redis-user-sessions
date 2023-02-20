@@ -235,6 +235,45 @@ async function updateUserSessions({
   await Promise.all(promises);
 }
 
+async function updateSessions({
+  client,
+  data,
+}: {
+  client: RedisClient;
+  data: Record<string, unknown>;
+}) {
+  const sessionIds = (await client.keys('session:*')).map((sessionKey) =>
+    sessionKey.replace(/^session:/, ''),
+  );
+
+  // TODO: Check upfront that data doesn't have a `userId` as that is not allowed
+
+  const promises = sessionIds.map((sessionId) =>
+    updateSessionInternal({
+      client,
+      sessionId,
+      data,
+      shouldErrorWhenSessionDoesNotExist: false,
+    }).then(
+      (data) => ({ status: 'resolved', data, error: null } as const),
+      (error) => ({ status: 'rejected', error, data: null } as const),
+    ),
+  );
+
+  // TODO: This was dangerous before - if one promise failed it got caught, but the rest weren't and were effectively unhandled
+  await Promise.all(promises).then((results) => {
+    const errors = results.map((result) =>
+      result.status === 'rejected' ? result.error : null,
+    );
+
+    if (errors.some((value) => value !== null)) {
+      throw errors;
+    }
+
+    return results.map(({ data }) => data);
+  });
+}
+
 function getSessionKey(sessionId: string) {
   return `session:${sessionId}`;
 }
@@ -270,4 +309,5 @@ export {
   deleteSession,
   getUserSessions,
   updateUserSessions,
+  updateSessions,
 };
