@@ -235,6 +235,20 @@ async function updateUserSessions({
   await Promise.all(promises);
 }
 
+async function deleteUserSessions({
+  client,
+  userId,
+}: {
+  client: RedisClient;
+  userId: string;
+}) {
+  const sessionIds = await getSessionIds({ client, userId });
+
+  await client.del(sessionIds.map(getSessionKey));
+
+  await client.del(getUserSessionsKey(userId));
+}
+
 function getSessionKey(sessionId: string) {
   return `session:${sessionId}`;
 }
@@ -270,4 +284,5 @@ export {
   deleteSession,
   getUserSessions,
   updateUserSessions,
+  deleteUserSessions,
 };

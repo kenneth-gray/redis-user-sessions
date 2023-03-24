@@ -10,6 +10,7 @@ import {
   deleteSession,
   getUserSessions,
   updateUserSessions,
+  deleteUserSessions,
 } from './index';
 
 type RedisClient = ReturnType<typeof createClient>;
@@ -84,7 +85,7 @@ describe('redis-user-sessions', () => {
 
         expect(returnedSessionId).toEqual(sessionId);
 
-        const sessionData = await getSession(client, sessionId);
+        const sessionData = await getSessionData(client, sessionId);
         expect(sessionData).toEqual(data);
 
         const expireTime = await client.pExpireTime(sessionKey);
@@ -128,8 +129,8 @@ describe('redis-user-sessions', () => {
           },
         });
 
-        const zsetData = await getZsetData(client, userId);
-        expect(zsetData).toEqual([sessionId]);
+        const userSessionsData = await getUserSessionsData(client, userId);
+        expect(userSessionsData).toEqual([sessionId]);
 
         // Need to delay for non awaited function to update the TTL before checking
         await delay();
@@ -167,8 +168,8 @@ describe('redis-user-sessions', () => {
           },
         });
 
-        const zsetData = await getZsetData(client, userId);
-        expect(zsetData).toEqual([sessionIdA, sessionIdB]);
+        const userSessionsData = await getUserSessionsData(client, userId);
+        expect(userSessionsData).toEqual([sessionIdA, sessionIdB]);
 
         // Need to delay for non awaited function to update the TTL before checking
         await delay();
@@ -206,8 +207,8 @@ describe('redis-user-sessions', () => {
           },
         });
 
-        const zsetData = await getZsetData(client, userId);
-        expect(zsetData).toEqual([sessionIdB, sessionIdA]);
+        const userSessionsData = await getUserSessionsData(client, userId);
+        expect(userSessionsData).toEqual([sessionIdB, sessionIdA]);
 
         // Need to delay for non awaited function to update the TTL before checking
         await delay();
@@ -276,20 +277,20 @@ describe('redis-user-sessions', () => {
           },
         });
 
-        const expiredSessionData = await getSession(client, sessionIdB);
+        const expiredSessionData = await getSessionData(client, sessionIdB);
         expect(expiredSessionData).toBeNull();
 
-        const zsetData = await getZsetData(client, userId);
+        const userSessionsData = await getUserSessionsData(client, userId);
         // Proves that out of data session B is still in zset
-        expect(zsetData).toEqual([sessionIdB, sessionIdA]);
+        expect(userSessionsData).toEqual([sessionIdB, sessionIdA]);
 
         await readSession({ client, sessionId: sessionIdA });
 
         // Need to delay for non awaited function to remove the expired session
         await delay();
 
-        const zsetData2 = await getZsetData(client, userId);
-        expect(zsetData2).toEqual([sessionIdA]);
+        const userSessionsData2 = await getUserSessionsData(client, userId);
+        expect(userSessionsData2).toEqual([sessionIdA]);
       }),
     );
   });
@@ -316,7 +317,7 @@ describe('redis-user-sessions', () => {
         await createSession({ client, sessionId, data });
         await updateSession({ client, sessionId, data: { a: 3, b: 4 } });
 
-        const sessionData = await getSession(client, sessionId);
+        const sessionData = await getSessionData(client, sessionId);
         expect(sessionData).toEqual({ ...data, a: 3, b: 4 });
       }),
     );
@@ -349,7 +350,7 @@ describe('redis-user-sessions', () => {
       'deletes session and data from user sessions',
       redisTest(async (client) => {
         let sessionData;
-        let zsetData;
+        let userSessionsData;
         const sessionId = '40b556de-7f16-589f-af0d-c3bc185ad825';
         const userId = 'Alma';
 
@@ -362,17 +363,17 @@ describe('redis-user-sessions', () => {
           },
         });
 
-        sessionData = await getSession(client, sessionId);
-        zsetData = await getZsetData(client, userId);
+        sessionData = await getSessionData(client, sessionId);
+        userSessionsData = await getUserSessionsData(client, userId);
         expect(sessionData).not.toBeNull();
-        expect(zsetData.length).toEqual(1);
+        expect(userSessionsData.length).toEqual(1);
 
         await deleteSession({ client, sessionId });
 
-        sessionData = await getSession(client, sessionId);
-        zsetData = await getZsetData(client, userId);
+        sessionData = await getSessionData(client, sessionId);
+        userSessionsData = await getUserSessionsData(client, userId);
         expect(sessionData).toBeNull();
-        expect(zsetData.length).toEqual(0);
+        expect(userSessionsData.length).toEqual(0);
       }),
     );
 
@@ -489,7 +490,7 @@ describe('redis-user-sessions', () => {
         },
       });
 
-      const sessionData = await getSession(client, sessionId);
+      const sessionData = await getSessionData(client, sessionId);
 
       expect(sessionData).toBe(null);
     }),
@@ -565,8 +566,8 @@ describe('redis-user-sessions', () => {
           { sessionId: sessionIdA, data: sessionDataA },
         ]);
 
-        const zsetData = await getZsetData(client, userId);
-        expect(zsetData).toEqual([sessionIdA]);
+        const userSessionsData = await getUserSessionsData(client, userId);
+        expect(userSessionsData).toEqual([sessionIdA]);
       }),
     );
   });
@@ -668,8 +669,72 @@ describe('redis-user-sessions', () => {
           { sessionId: sessionIdB, data: { ...sessionData, new: 'property' } },
         ]);
 
-        const empytSessionData = await getSession(client, sessionIdC);
+        const empytSessionData = await getSessionData(client, sessionIdC);
         expect(empytSessionData).toEqual(null);
+      }),
+    );
+  });
+
+  describe('deleteUserSessions', () => {
+    it(
+      'deletes sessions associated with user and no one else',
+      redisTest(async (client) => {
+        const sessionIdA = '7157d50d-502b-5f85-bc63-f29c02778aaf';
+        const sessionIdB = '5d6424e5-00f4-5270-a0d1-823789495c04';
+        const sessionIdC = 'fc197a87-49bb-5023-9820-b65941dc4165';
+        const sessionIdD = '76a3e11c-633b-55cb-a9e7-1833a9e4b1a6';
+        const userIdA = 'Christine';
+        const userIdB = 'Estella';
+        const expires = getInXMinutesDate(10).toISOString();
+        const sessionDataA = { userId: userIdA, expires, a: 1 };
+        const sessionDataB = { userId: userIdA, expires, a: 2 };
+        const sessionDataC = { userId: userIdA, expires, a: 3 };
+        const sessionDataD = { userId: userIdB, expires, a: 4 };
+
+        await createSession({
+          client,
+          sessionId: sessionIdA,
+          data: sessionDataA,
+        });
+
+        await delay();
+
+        await createSession({
+          client,
+          sessionId: sessionIdB,
+          data: sessionDataB,
+        });
+
+        await delay();
+
+        await createSession({
+          client,
+          sessionId: sessionIdC,
+          data: sessionDataC,
+        });
+
+        await delay();
+
+        await createSession({
+          client,
+          sessionId: sessionIdD,
+          data: sessionDataD,
+        });
+
+        await delay();
+
+        await deleteUserSessions({ client, userId: userIdA });
+
+        const userSessionsData = await getUserSessionsData(client, userIdA);
+        const sessionsData = await Promise.all([
+          getSessionData(client, sessionIdA),
+          getSessionData(client, sessionIdB),
+          getSessionData(client, sessionIdC),
+        ]);
+
+        expect(userSessionsData).toEqual([]);
+        expect(sessionsData).toEqual([null, null, null]);
+        expect(await getSessionData(client, sessionIdD)).toEqual(sessionDataD);
       }),
     );
   });
@@ -706,7 +771,7 @@ function redisTest(fn: (client: RedisClient) => void | Promise<void>) {
   };
 }
 
-async function getSession(client: RedisClient, sessionId: string) {
+async function getSessionData(client: RedisClient, sessionId: string) {
   const sessionKey = getSessionKey(sessionId);
   const serialisedData = await client.get(sessionKey);
   const sessionData =
@@ -715,11 +780,11 @@ async function getSession(client: RedisClient, sessionId: string) {
   return sessionData;
 }
 
-async function getZsetData(client: RedisClient, userId: string) {
+async function getUserSessionsData(client: RedisClient, userId: string) {
   const userSessionsKey = getUserSessionsKey(userId);
-  const zsetData = await client.zRange(userSessionsKey, 0, -1);
+  const userSessionsData = await client.zRange(userSessionsKey, 0, -1);
 
-  return zsetData;
+  return userSessionsData;
 }
 
 function getSessionKey(sessionId: string) {
