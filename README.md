@@ -129,3 +129,17 @@ Update all sessions tied to a specific user id.
 | userId         | `string`      | _required_ | Unique identifier for the user.                                                                             |
 | data           | `object`      | _required_ | Object can contain any serialisable properties.                                                             |
 | `return value` | `undefined`   | N/A        | N/A                                                                                                         |
+
+### deleteUserSessions
+
+Delete all sessions tied to a specific user id.
+
+`async function deleteUserSessions({ client, userId })`
+
+<!-- https://www.tablesgenerator.com/markdown_tables -->
+
+| Property       | Type          | Default    | Description                                                                                                 |
+| -------------- | ------------- | ---------- | ----------------------------------------------------------------------------------------------------------- |
+| client         | `RedisClient` | _required_ | Redis client created using `createClient` from the `redis` npm package. Must already be connected to Redis. |
+| userId         | `string`      | _required_ | Unique identifier for the user.                                                                             |
+| `return value` | `undefined`   | N/A        | N/A                                                                                                         |
