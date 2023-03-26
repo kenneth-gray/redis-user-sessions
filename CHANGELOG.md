@@ -1,5 +1,11 @@
 # redis-user-sessions
 
+## 2.1.0
+
+### Minor Changes
+
+- ab6ee33: Add deleteUserSessions function
+
 ## 2.0.0
 
 ### Major Changes
